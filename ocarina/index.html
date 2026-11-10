@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#14201c">
+<title>Ocarina</title>
+<style>
+  :root {
+    --bg: #14201c; --panel: #1d2d28; --text: #e8efe9; --muted: #8fa59b;
+    --note: #e7b84a; --note-on: #ffe08a; --base: #4a8fe7; --base-on: #8fc0ff;
+    --mod: #b86ad1; --mod-on: #e2a8f5;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    user-select: none; -webkit-user-select: none; touch-action: none; overflow: hidden; }
+  main { height: 100%; display: flex; flex-direction: column; align-items: center;
+    padding: 12px; gap: 10px; }
+  header { text-align: center; }
+  h1 { margin: 0; font-size: 1.3rem; letter-spacing: .05em; }
+  #now { font-size: 2.4rem; font-weight: 700; min-height: 3rem; color: var(--note-on);
+    font-variant-numeric: tabular-nums; }
+  #history { display: flex; gap: 6px; min-height: 36px; flex-wrap: nowrap; overflow: hidden;
+    max-width: 100%; padding: 4px 8px; background: var(--panel); border-radius: 10px; }
+  .h { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+    font-size: .8rem; font-weight: 700; color: #14201c; position: relative; flex: none; }
+  .h small { position: absolute; top: -6px; right: -6px; font-size: .7rem; color: var(--mod-on); }
+  .stage { flex: 1; width: 100%; max-width: 900px; display: flex; align-items: center;
+    justify-content: space-around; gap: 16px; flex-wrap: wrap; }
+  .group { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  button { font: inherit; border: none; cursor: pointer; touch-action: none; color: #14201c;
+    font-weight: 800; transition: transform .05s, background .05s, box-shadow .05s; }
+  .diamond { display: grid; grid-template-columns: repeat(3, 76px); grid-template-rows: repeat(3, 76px); gap: 6px; }
+  .note { border-radius: 50%; background: var(--note); font-size: 1.7rem;
+    box-shadow: 0 5px 0 #9c7a2b; }
+  .note.base { background: var(--base); box-shadow: 0 5px 0 #2d5c99; width: 96px; height: 96px; font-size: 1.4rem; }
+  .note.on { background: var(--note-on); transform: translateY(4px); box-shadow: 0 1px 0 #9c7a2b; }
+  .note.base.on { background: var(--base-on); box-shadow: 0 1px 0 #2d5c99; }
+  .up { grid-column: 2; grid-row: 1; } .left { grid-column: 1; grid-row: 2; }
+  .right { grid-column: 3; grid-row: 2; } .down { grid-column: 2; grid-row: 3; }
+  .mods { display: flex; gap: 10px; }
+  .mod { width: 76px; height: 60px; border-radius: 14px; background: var(--mod); font-size: 1.6rem;
+    box-shadow: 0 5px 0 #7a3f8f; }
+  .mod.on { background: var(--mod-on); transform: translateY(4px); box-shadow: 0 1px 0 #7a3f8f; }
+  #pad { width: 150px; height: 150px; border-radius: 50%; background: var(--panel);
+    border: 2px solid #2f4740; position: relative; touch-action: none; }
+  #knob { width: 54px; height: 54px; border-radius: 50%; background: #5d7a70; position: absolute;
+    left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+  #pad::before, #pad::after { position: absolute; left: 50%; transform: translateX(-50%);
+    color: var(--muted); font-size: .7rem; }
+  #pad::before { content: "▲ agudo"; top: 6px; } #pad::after { content: "▼ grave"; bottom: 6px; }
+  :root { --b: min(76px, 13vh, 19vw); }
+  .diamond { grid-template-columns: repeat(3, var(--b)); grid-template-rows: repeat(3, var(--b)); }
+  .note { font-size: calc(var(--b) * .38); }
+  .note.base { width: calc(var(--b) * 1.25); height: calc(var(--b) * 1.25); }
+  .mod { width: var(--b); height: calc(var(--b) * .78); }
+  #pad { width: calc(var(--b) * 2); height: calc(var(--b) * 2); }
+  #knob { width: calc(var(--b) * .7); height: calc(var(--b) * .7); }
+  @media (pointer: coarse) { footer { display: none; } }
+  @media (max-height: 500px) { main { padding: 6px; gap: 4px; } h1 { display: none; }
+    #now { font-size: 1.6rem; min-height: 2rem; } .label { display: none; }
+    :root { --b: min(76px, 19vh, 19vw); } #pad::before, #pad::after { display: none; } }
+  /* Retrato: notas em cima, bend e meio-tom embaixo */
+  @media (max-aspect-ratio: 1/1) {
+    :root { --b: min(76px, 11vh, 22vw); }
+    .stage { display: grid; grid-template-columns: 1fr 1fr; justify-items: center; align-content: center; row-gap: 18px; }
+    .stage > .group:nth-child(2) { grid-column: 1 / 3; grid-row: 1; }
+    .stage > .group:nth-child(1) { grid-row: 2; }
+    .stage > .group:nth-child(3) { grid-row: 2; }
+    .mod { width: calc(var(--b) * .8); }
+  }
+  footer { font-size: .72rem; color: var(--muted); text-align: center; line-height: 1.5; max-width: 700px; }
+  kbd { background: var(--panel); border-radius: 4px; padding: 1px 5px; border: 1px solid #2f4740; }
+  #vol { width: 120px; accent-color: var(--note); }
+  .row { display: flex; gap: 10px; align-items: center; font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>OCARINA</h1>
+    <div id="now">—</div>
+  </header>
+  <div id="history" aria-label="Notas tocadas"></div>
+
+  <div class="stage">
+    <div class="group">
+      <div class="label">Bend / vibrato</div>
+      <div id="pad"><div id="knob"></div></div>
+      <div class="label" style="text-transform:none">↕ dobra o tom · ↔ vibrato</div>
+    </div>
+
+    <div class="group">
+      <div class="label">Notas</div>
+      <div class="diamond">
+        <button class="note up"    data-note="up"   aria-label="Ré 5">▲</button>
+        <button class="note left"  data-note="left" aria-label="Si 4">◀</button>
+        <button class="note right" data-note="right" aria-label="Lá 4">▶</button>
+        <button class="note down"  data-note="down" aria-label="Fá 4">▼</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="label">Meio-tom</div>
+      <div class="mods">
+        <button class="mod" data-mod="flat" aria-label="Bemol, meio-tom abaixo">♭</button>
+        <button class="mod" data-mod="sharp" aria-label="Sustenido, meio-tom acima">♯</button>
+      </div>
+      <button class="note base" data-note="base" aria-label="Ré 4">●</button>
+    </div>
+  </div>
+
+  <div class="row">Volume <input id="vol" type="range" min="0" max="1" step="0.01" value="0.7"></div>
+
+  <footer>
+    Teclado: <kbd>Espaço</kbd> ● · <kbd>↓</kbd> <kbd>→</kbd> <kbd>←</kbd> <kbd>↑</kbd> notas ·
+    segure <kbd>Z</kbd> ♭ / <kbd>X</kbd> ♯ · <kbd>W</kbd>/<kbd>S</kbd> dobra o tom · <kbd>V</kbd> vibrato<br>
+    Controle: <b>A</b> ● · analógico direito / direcional = notas · gatilhos esquerdos ♭ / direitos ♯ ·
+    analógico esquerdo = bend (↕) e vibrato (↔)
+  </footer>
+</main>
+
+<script>
+(() => {
+  // ---- Notas: ● Ré4, ▼ Fá4, ▶ Lá4, ◀ Si4, ▲ Ré5 (MIDI) ----
+  const NOTES = { base: 62, down: 65, right: 69, left: 71, up: 74 };
+  const ICON  = { base: "●", down: "▼", right: "▶", left: "◀", up: "▲" };
+  const NAMES = ["Dó","Dó♯","Ré","Ré♯","Mi","Fá","Fá♯","Sol","Sol♯","Lá","Lá♯","Si"];
+  const BEND_RANGE = 2;     // semitons máximos do bend
+  const BASE_VIBRATO = 7;   // cents
+  const MAX_VIBRATO = 60;   // cents
+
+  // ---- Estado ----
+  const held = [];                       // pilha de notas pressionadas (a última soa)
+  const noteSources = {};                // nota -> Set de fontes (teclado, toque, controle)
+  const modSources = { flat: new Set(), sharp: new Set() };
+  let bend = 0, padBend = 0, keyBend = 0, padBendGp = 0;   // em semitons
+  let vib = 0, padVib = 0, keyVib = 0, gpVib = 0;          // 0..1
+
+  // ---- Áudio ----
+  let ctx, gate, master, oscs = [], noiseFilter, vibGain;
+  function initAudio() {
+    if (ctx) { if (ctx.state === "suspended") ctx.resume(); return; }
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = +document.getElementById("vol").value;
+    const comp = ctx.createDynamicsCompressor();
+    const tone = ctx.createBiquadFilter(); tone.type = "lowpass"; tone.frequency.value = 3500;
+    gate = ctx.createGain(); gate.gain.value = 0;
+    gate.connect(tone).connect(master).connect(comp).connect(ctx.destination);
+
+    // Vibrato (LFO em cents ligado ao detune de todos os osciladores)
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 5.5;
+    vibGain = ctx.createGain(); vibGain.gain.value = BASE_VIBRATO;
+    lfo.connect(vibGain); lfo.start();
+
+    // Timbre de ocarina: quase senoidal com harmônicos fracos
+    [[1, 0.55], [2, 0.07], [3, 0.025]].forEach(([mult, amp]) => {
+      const o = ctx.createOscillator(); o.type = "sine";
+      const g = ctx.createGain(); g.gain.value = amp;
+      vibGain.connect(o.detune);
+      o.connect(g).connect(gate); o.start();
+      oscs.push({ o, mult });
+    });
+
+    // Sopro: ruído filtrado em torno da nota
+    const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const noise = ctx.createBufferSource(); noise.buffer = buf; noise.loop = true;
+    noiseFilter = ctx.createBiquadFilter(); noiseFilter.type = "bandpass"; noiseFilter.Q.value = 2;
+    const ng = ctx.createGain(); ng.gain.value = 0.05;
+    noise.connect(noiseFilter).connect(ng).connect(gate); noise.start();
+  }
+
+  const midiToFreq = m => 440 * Math.pow(2, (m - 69) / 12);
+  const modOffset = () => (modSources.sharp.size ? 1 : 0) - (modSources.flat.size ? 1 : 0);
+  const current = () => held[held.length - 1];
+
+  function updatePitch(instant) {
+    const n = current();
+    if (!ctx || !n) return;
+    const midi = NOTES[n] + modOffset() + bend;
+    const f = midiToFreq(midi), t = ctx.currentTime, tc = instant ? 0.003 : 0.012;
+    oscs.forEach(({ o, mult }) => o.frequency.setTargetAtTime(f * mult, t, tc));
+    noiseFilter.frequency.setTargetAtTime(f * 1.5, t, tc);
+    vibGain.gain.setTargetAtTime(BASE_VIBRATO + vib * (MAX_VIBRATO - BASE_VIBRATO), t, 0.05);
+    showNow(midi);
+  }
+
+  function showNow(midi) {
+    const r = Math.round(midi), name = NAMES[((r % 12) + 12) % 12], oct = Math.floor(r / 12) - 1;
+    const cents = Math.round((midi - r) * 100);
+    document.getElementById("now").textContent =
+      `${name}${oct}` + (Math.abs(cents) > 4 ? ` ${cents > 0 ? "+" : ""}${cents}¢` : "");
+  }
+
+  function updateBendVib() {
+    bend = Math.max(-BEND_RANGE, Math.min(BEND_RANGE, padBend + keyBend + padBendGp));
+    vib = Math.min(1, Math.max(padVib, keyVib, gpVib));
+    updatePitch();
+  }
+
+  // ---- Notas e modificadores ----
+  function noteOn(n, src) {
+    initAudio();
+    const s = noteSources[n] || (noteSources[n] = new Set());
+    if (s.has(src)) return;
+    s.add(src);
+    if (s.size > 1) return;
+    const wasSilent = held.length === 0;
+    held.push(n);
+    setBtn(`[data-note="${n}"]`, true);
+    updatePitch(wasSilent);
+    const t = ctx.currentTime;
+    gate.gain.cancelScheduledValues(t);
+    if (wasSilent) {
+      gate.gain.setValueAtTime(gate.gain.value, t);
+      gate.gain.setTargetAtTime(0.4, t, 0.018);
+    } else {
+      // pequena articulação ao trocar de nota (como um golpe de língua)
+      gate.gain.setTargetAtTime(0.25, t, 0.008);
+      gate.gain.setTargetAtTime(0.4, t + 0.025, 0.02);
+    }
+    addHistory(n);
+  }
+
+  function noteOff(n, src) {
+    const s = noteSources[n];
+    if (!s || !s.delete(src) || s.size) return;
+    const i = held.lastIndexOf(n); if (i >= 0) held.splice(i, 1);
+    setBtn(`[data-note="${n}"]`, false);
+    if (!ctx) return;
+    if (held.length) updatePitch();
+    else {
+      const t = ctx.currentTime;
+      gate.gain.cancelScheduledValues(t);
+      gate.gain.setValueAtTime(gate.gain.value, t);
+      gate.gain.setTargetAtTime(0, t, 0.06);
+      document.getElementById("now").textContent = "—";
+    }
+  }
+
+  function modOn(m, src)  { initAudio(); modSources[m].add(src); setBtn(`[data-mod="${m}"]`, true); updatePitch(); }
+  function modOff(m, src) { modSources[m].delete(src); if (!modSources[m].size) setBtn(`[data-mod="${m}"]`, false); updatePitch(); }
+
+  function setBtn(sel, on) { document.querySelectorAll(sel).forEach(b => b.classList.toggle("on", on)); }
+
+  const hist = document.getElementById("history");
+  function addHistory(n) {
+    const el = document.createElement("div");
+    el.className = "h";
+    el.style.background = n === "base" ? "var(--base)" : "var(--note)";
+    el.textContent = ICON[n];
+    const m = modOffset();
+    if (m) { const s = document.createElement("small"); s.textContent = m > 0 ? "♯" : "♭"; el.appendChild(s); }
+    hist.appendChild(el);
+    while (hist.children.length > 16) hist.firstChild.remove();
+  }
+
+  // ---- Toque / mouse (multitoque) ----
+  document.querySelectorAll("[data-note],[data-mod]").forEach(btn => {
+    const note = btn.dataset.note, mod = btn.dataset.mod;
+    btn.addEventListener("pointerdown", e => {
+      e.preventDefault(); btn.setPointerCapture(e.pointerId);
+      const src = "p" + e.pointerId;
+      note ? noteOn(note, src) : modOn(mod, src);
+    });
+    const up = e => { const src = "p" + e.pointerId; note ? noteOff(note, src) : modOff(mod, src); };
+    btn.addEventListener("pointerup", up);
+    btn.addEventListener("pointercancel", up);
+  });
+  document.addEventListener("contextmenu", e => e.preventDefault());
+
+  // ---- Pad de bend/vibrato ----
+  const pad = document.getElementById("pad"), knob = document.getElementById("knob");
+  let padPointer = null;
+  function padMove(e) {
+    const r = pad.getBoundingClientRect(), rad = r.width / 2;
+    let dx = (e.clientX - r.left - rad) / rad, dy = (e.clientY - r.top - rad) / rad;
+    const len = Math.hypot(dx, dy); if (len > 1) { dx /= len; dy /= len; }
+    knob.style.left = `${50 + dx * 50}%`; knob.style.top = `${50 + dy * 50}%`;
+    padBend = -dy * BEND_RANGE; padVib = Math.abs(dx);
+    updateBendVib();
+  }
+  pad.addEventListener("pointerdown", e => { initAudio(); padPointer = e.pointerId; pad.setPointerCapture(e.pointerId); padMove(e); });
+  pad.addEventListener("pointermove", e => { if (e.pointerId === padPointer) padMove(e); });
+  const padEnd = e => {
+    if (e.pointerId !== padPointer) return;
+    padPointer = null; padBend = 0; padVib = 0;
+    knob.style.left = "50%"; knob.style.top = "50%"; updateBendVib();
+  };
+  pad.addEventListener("pointerup", padEnd); pad.addEventListener("pointercancel", padEnd);
+
+  // ---- Teclado ----
+  const KEY_NOTES = { Space: "base", ArrowDown: "down", ArrowRight: "right", ArrowLeft: "left", ArrowUp: "up" };
+  const KEY_MODS = { KeyZ: "flat", KeyX: "sharp" };
+  const keyBendState = { KeyW: 0, KeyS: 0 };
+  addEventListener("keydown", e => {
+    if (e.repeat) { if (KEY_NOTES[e.code] || KEY_MODS[e.code]) e.preventDefault(); return; }
+    if (KEY_NOTES[e.code]) { e.preventDefault(); noteOn(KEY_NOTES[e.code], "k" + e.code); }
+    else if (KEY_MODS[e.code]) { e.preventDefault(); modOn(KEY_MODS[e.code], "k" + e.code); }
+    else if (e.code in keyBendState) { keyBendState[e.code] = 1; keyBend = (keyBendState.KeyW - keyBendState.KeyS) * BEND_RANGE; updateBendVib(); }
+    else if (e.code === "KeyV") { keyVib = 0.6; updateBendVib(); }
+  });
+  addEventListener("keyup", e => {
+    if (KEY_NOTES[e.code]) noteOff(KEY_NOTES[e.code], "k" + e.code);
+    else if (KEY_MODS[e.code]) modOff(KEY_MODS[e.code], "k" + e.code);
+    else if (e.code in keyBendState) { keyBendState[e.code] = 0; keyBend = (keyBendState.KeyW - keyBendState.KeyS) * BEND_RANGE; updateBendVib(); }
+    else if (e.code === "KeyV") { keyVib = 0; updateBendVib(); }
+  });
+  // Solta tudo se a janela perder o foco
+  addEventListener("blur", () => {
+    Object.keys(noteSources).forEach(n => [...noteSources[n]].forEach(s => noteOff(n, s)));
+    ["flat", "sharp"].forEach(m => [...modSources[m]].forEach(s => modOff(m, s)));
+  });
+
+  // ---- Controle (Gamepad API, mapeamento padrão) ----
+  const gpPrev = {};
+  function setGp(id, active, on, off) {
+    if (active && !gpPrev[id]) on(); else if (!active && gpPrev[id]) off();
+    gpPrev[id] = active;
+  }
+  function pollGamepads() {
+    for (const gp of navigator.getGamepads ? navigator.getGamepads() : []) {
+      if (!gp) continue;
+      const b = i => gp.buttons[i] && (gp.buttons[i].pressed || gp.buttons[i].value > 0.5);
+      const ax = i => gp.axes[i] || 0, T = 0.55, src = "g" + gp.index;
+      const rx = ax(2), ry = ax(3);
+      const states = {
+        base:  b(0),
+        up:    b(12) || ry < -T || b(3),
+        down:  b(13) || ry >  T || b(1),
+        left:  b(14) || rx < -T || b(2),
+        right: b(15) || rx >  T,
+      };
+      for (const n in states) setGp(src + n, states[n], () => noteOn(n, src + n), () => noteOff(n, src + n));
+      setGp(src + "flat",  b(4) || b(6), () => modOn("flat", src),  () => modOff("flat", src));
+      setGp(src + "sharp", b(5) || b(7), () => modOn("sharp", src), () => modOff("sharp", src));
+      const lx = Math.abs(ax(0)) > 0.15 ? ax(0) : 0, ly = Math.abs(ax(1)) > 0.15 ? ax(1) : 0;
+      if (lx !== gpPrev[src + "lx"] || ly !== gpPrev[src + "ly"]) {
+        gpPrev[src + "lx"] = lx; gpPrev[src + "ly"] = ly;
+        padBendGp = -ly * BEND_RANGE; gpVib = Math.abs(lx); updateBendVib();
+      }
+    }
+    requestAnimationFrame(pollGamepads);
+  }
+  addEventListener("gamepadconnected", () => { if (!pollGamepads.started) { pollGamepads.started = true; pollGamepads(); } });
+
+  document.getElementById("vol").addEventListener("input", e => { if (master) master.gain.value = +e.target.value; });
+})();
+</script>
+</body>
+</html>
