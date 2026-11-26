@@ -1,5 +1,7 @@
 import { CHORDS, GROUPS } from './chords.js';
-import { PRESETS, DEFAULT_CUSTOM, SYMBOLS, EDIT_CYCLE } from './patterns.js';
+import { PRESETS, TEMPLATES, MAX_STEPS, DEFAULT_CUSTOM, SYMBOLS, EDIT_CYCLE } from './patterns.js';
+
+const ALL_TEMPLATES = { ...TEMPLATES, ...PRESETS };
 import { GuitarEngine } from './audio.js';
 
 const $ = (s) => document.querySelector(s);
@@ -311,7 +313,7 @@ function openEditor() {
   stopRhythm();
   draft = { ...state.custom };
   const sel = $('#copyFrom');
-  sel.innerHTML = '<option value="">—</option>' + Object.entries(PRESETS).map(([k, p]) => `<option value="${k}">${p.name}</option>`).join('');
+  sel.innerHTML = '<option value="">— escolher —</option>' + Object.entries(ALL_TEMPLATES).map(([k, p]) => `<option value="${k}">${p.name}</option>`).join('');
   sel.value = '';
   $('#customBpm').value = draft.bpm;
   $('#customSwing').value = draft.swing;
@@ -339,21 +341,30 @@ function renderEditSteps() {
     });
     wrap.appendChild(b);
   });
-  document.querySelectorAll('.editor-len button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.len === draft.steps.length)));
+  document.querySelectorAll('.editor-len button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.sub === draft.sub)));
+  $('#stepsCount').textContent = draft.steps.length;
+  $('#stepsLess').disabled = draft.steps.length <= 1;
+  $('#stepsMore').disabled = draft.steps.length >= MAX_STEPS;
 }
 
 function setupEditor() {
   document.querySelectorAll('.editor-len button').forEach((b) => b.addEventListener('click', () => {
-    const len = +b.dataset.len;
-    if (len === draft.steps.length) return;
+    const sub = +b.dataset.sub;
+    if (sub === draft.sub) return;
     // Converte mantendo os golpes nos mesmos tempos
-    if (len === 16) draft.steps = [...draft.steps].map((c) => c + '.').join('');
-    else draft.steps = [...draft.steps].filter((_, i) => i % 2 === 0).join('');
-    draft.sub = len / 4;
+    if (sub === 4) draft.steps = [...draft.steps].map((c) => c + '.').join('').slice(0, MAX_STEPS);
+    else draft.steps = [...draft.steps].filter((_, i) => i % 2 === 0).join('') || '.';
+    draft.sub = sub;
     renderEditSteps();
   }));
+  $('#stepsLess').addEventListener('click', () => {
+    if (draft.steps.length > 1) { draft.steps = draft.steps.slice(0, -1); renderEditSteps(); }
+  });
+  $('#stepsMore').addEventListener('click', () => {
+    if (draft.steps.length < MAX_STEPS) { draft.steps += '.'; renderEditSteps(); }
+  });
   $('#copyFrom').addEventListener('change', (e) => {
-    const p = PRESETS[e.target.value];
+    const p = ALL_TEMPLATES[e.target.value];
     if (!p) return;
     Object.assign(draft, { steps: p.steps, sub: p.sub, swing: p.swing, bpm: p.bpm });
     $('#customBpm').value = draft.bpm;

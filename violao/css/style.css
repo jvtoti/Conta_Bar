@@ -289,6 +289,9 @@ button {
 .editor h2 { margin: 0; font-size: 18px; }
 .muted { color: var(--muted); margin: 0; font-size: 13px; }
 .editor-len { display: flex; gap: 6px; }
+.editor-count b { font-size: 20px; min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
+.editor-count .round:disabled { opacity: .35; }
+.muted.small { font-size: 12px; }
 .edit-steps {
   display: grid;
   grid-template-columns: repeat(var(--n), 1fr);

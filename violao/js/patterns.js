@@ -28,4 +28,14 @@ export const PRESETS = {
   reggae: { name: 'Reggae', emoji: '🌴', sub: 4, steps: '....S.u.....S.u.', swing: 0.12, bpm: 80 },
 };
 
-export const DEFAULT_CUSTOM = { name: 'Personalizada', emoji: '✨', sub: 2, steps: 'D.DUXUDU', swing: 0, bpm: 100 };
+// Modelos extras para usar como ponto de partida na batida personalizada
+export const TEMPLATES = {
+  euquero: { name: 'Eu quero tocar (↓ ↓↑ ↑↓)', sub: 2, steps: 'D.DU.UD.', swing: 0, bpm: 90 },
+  balada: { name: 'Balada (↓ ↓ ↓↑)', sub: 2, steps: 'D.D.D.DU', swing: 0, bpm: 75 },
+  valsa: { name: 'Valsa 3/4 (● ↓ ↓)', sub: 2, steps: 'B.D.D.', swing: 0, bpm: 110 },
+  simples: { name: 'Só pra baixo (↓ ↓ ↓ ↓)', sub: 2, steps: 'D.D.D.D.', swing: 0, bpm: 90 },
+};
+
+export const MAX_STEPS = 16;
+
+export const DEFAULT_CUSTOM = { name: 'Personalizada', emoji: '✨', sub: 2, steps: 'D.DU.UD.', swing: 0, bpm: 90 };

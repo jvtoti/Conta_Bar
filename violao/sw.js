@@ -1,5 +1,5 @@
 // Service worker: deixa o app funcionando offline.
-const CACHE = 'violao-v1';
+const CACHE = 'violao-v2';
 const FILES = [
   './',
   './index.html',

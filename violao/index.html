@@ -59,13 +59,20 @@
     <form method="dialog" class="editor-inner">
       <h2>✨ Batida personalizada</h2>
       <p class="muted">Toque em cada passo para trocar o golpe.</p>
-      <div class="editor-len">
-        <button type="button" data-len="8" class="pill">8 passos (colcheias)</button>
-        <button type="button" data-len="16" class="pill">16 passos (semicolcheias)</button>
+      <div class="editor-row editor-count">
+        <span>Passos:</span>
+        <button type="button" id="stepsLess" class="round" aria-label="Menos passos">−</button>
+        <b id="stepsCount">8</b>
+        <button type="button" id="stepsMore" class="round" aria-label="Mais passos">+</button>
       </div>
+      <div class="editor-len">
+        <button type="button" data-sub="2" class="pill">Cada passo = ½ tempo</button>
+        <button type="button" data-sub="4" class="pill">Cada passo = ¼ tempo</button>
+      </div>
+      <p class="muted small">Dica: use <b>·</b> (pausa) para os espaços entre os golpes. Ex.: ↓ · ↓ ↑ · ↑ ↓ ·</p>
       <div id="editSteps" class="edit-steps"></div>
       <div id="legend" class="legend"></div>
-      <label class="editor-row">Copiar de:
+      <label class="editor-row">Modelo:
         <select id="copyFrom">
           <option value="">—</option>
         </select>
