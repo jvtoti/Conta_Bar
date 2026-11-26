@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#14110f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Violão Fácil" />
+  <title>Violão Fácil</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="top">
+      <button id="current" class="current" aria-label="Acorde atual (toque para ouvir)">
+        <span id="chordName" class="chord-name">G</span>
+        <svg id="diagram" class="diagram" viewBox="0 0 70 84" aria-hidden="true"></svg>
+      </button>
+
+      <div class="top-controls">
+        <div class="bpm">
+          <button id="bpmDown" class="round" aria-label="Diminuir BPM">−</button>
+          <div class="bpm-value"><span id="bpm">100</span><small>BPM</small></div>
+          <button id="bpmUp" class="round" aria-label="Aumentar BPM">+</button>
+        </div>
+        <div class="toggles">
+          <button id="latch" class="pill" aria-pressed="false" title="Travar: toque uma vez para tocar, outra para parar">🔒 Travar</button>
+          <button id="autoBpm" class="pill" aria-pressed="true" title="Usa o BPM sugerido de cada batida">⚡ BPM auto</button>
+        </div>
+        <label class="volume">🔊 <input id="volume" type="range" min="0" max="1" step="0.01" value="0.9" /></label>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="chords-area">
+        <nav class="tabs" role="tablist">
+          <button role="tab" data-tab="favoritos">★ Meus</button>
+          <button role="tab" data-tab="maiores">Maiores</button>
+          <button role="tab" data-tab="menores">Menores</button>
+          <button role="tab" data-tab="setimas">Sétimas</button>
+        </nav>
+        <div id="chordGrid" class="chord-grid"></div>
+        <p id="hint" class="hint">Segure um acorde para adicionar/remover dos ★ Meus</p>
+      </section>
+
+      <section class="rhythm-area">
+        <div id="steps" class="steps" aria-label="Batida"></div>
+        <div id="rhythms" class="rhythms"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="editor" class="editor">
+    <form method="dialog" class="editor-inner">
+      <h2>✨ Batida personalizada</h2>
+      <p class="muted">Toque em cada passo para trocar o golpe.</p>
+      <div class="editor-len">
+        <button type="button" data-len="8" class="pill">8 passos (colcheias)</button>
+        <button type="button" data-len="16" class="pill">16 passos (semicolcheias)</button>
+      </div>
+      <div id="editSteps" class="edit-steps"></div>
+      <div id="legend" class="legend"></div>
+      <label class="editor-row">Copiar de:
+        <select id="copyFrom">
+          <option value="">—</option>
+        </select>
+      </label>
+      <label class="editor-row">BPM sugerido: <input id="customBpm" type="number" min="40" max="220" /></label>
+      <label class="editor-row">Swing: <input id="customSwing" type="range" min="0" max="0.3" step="0.01" /></label>
+      <div class="editor-actions">
+        <button type="button" id="testCustom" class="btn">▶ Segure p/ testar</button>
+        <button type="button" id="clearCustom" class="btn ghost">Limpar</button>
+        <button value="close" class="btn primary">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
