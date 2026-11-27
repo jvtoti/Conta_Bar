@@ -31,6 +31,8 @@ export const PRESETS = {
 // Modelos extras para usar como ponto de partida na batida personalizada
 export const TEMPLATES = {
   euquero: { name: 'Eu quero tocar (↓ ↓↑ ↑↓)', sub: 2, steps: 'D.DU.UD.', swing: 0, bpm: 90 },
+  seisgolpes: { name: '6 golpes seguidos (↓↓↑↑↓↓)', sub: 2, steps: 'DDUUDD', swing: 0, bpm: 80 },
+  seiscomespaco: { name: '6 golpes com respiro (↓ ↓↑ ↑↓↓)', sub: 2, steps: 'D.DU.UDD', swing: 0, bpm: 90 },
   balada: { name: 'Balada (↓ ↓ ↓↑)', sub: 2, steps: 'D.D.D.DU', swing: 0, bpm: 75 },
   valsa: { name: 'Valsa 3/4 (● ↓ ↓)', sub: 2, steps: 'B.D.D.', swing: 0, bpm: 110 },
   simples: { name: 'Só pra baixo (↓ ↓ ↓ ↓)', sub: 2, steps: 'D.D.D.D.', swing: 0, bpm: 90 },
